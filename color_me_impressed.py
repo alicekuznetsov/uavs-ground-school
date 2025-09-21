@@ -2,8 +2,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
-#  TODO: allow for user to provide image 
-filename = 'assets/deltarune_art.png'
+filename = 'assets/' + input("Please provide the full name (name.filetype) of the image to analyze the assets folder: ")
 
 def show_img(name, object):
     ''' 
@@ -13,18 +12,16 @@ def show_img(name, object):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-img = cv2.imread(filename, cv2.IMREAD_COLOR_BGR) 
+img = cv2.imread(filename) 
 hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
 
-# TODO: Use color distribution (the video has a histogram, thats a pretty good idea) to automatically determine which colors to mask
-
 # Calculate the histogram of the hue channel
-hue_channel = hsv_img[0, :, 0]
-hist = cv2.calcHist([hue_channel], [0], None, [180], [0, 180])
-
-# Find the peak hues above 30% of the maximum histogram value
+hues, s, v = cv2.split(hsv_img)
+hist = cv2.calcHist(hues, [0], None, [180], [0, 180])
 hist_peaks = []
 threshold = hist.max() * 0.3
+hue_range = 15
+
 for hue, occurrences in enumerate(hist):
     if occurrences > threshold:
         # Don't add a hue if its close to another hue
@@ -40,8 +37,8 @@ print("Peaks found at", hist_peaks)
 hue_masks = []
 for hue in hist_peaks:
     # Max & Min functions allow for wrapping 
-    lower_bound =  (max(0, hue - 10), 50, 50)
-    upper_bound = (min(179, hue + 10), 255, 255)
+    lower_bound =  (max(0, hue - hue_range), 50, 50)
+    upper_bound = (min(179, hue + hue_range), 255, 255)
     hue_masks.append(cv2.inRange(hsv_img, lower_bound, upper_bound))
     
 
@@ -64,16 +61,15 @@ axs[0, 0].imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
 # -- Plot histograms and masks -- 
 i = 0
 while i < len(hue_masks):
-    afwadha = cv2.bitwise_and(img, img, mask=hue_masks[i])
-    axs[1 + i, 0].imshow(cv2.cvtColor(afwadha, cv2.COLOR_BGR2RGB))
+    masked_img = cv2.bitwise_and(img, img, mask=hue_masks[i])
+    axs[1 + i, 0].imshow(cv2.cvtColor(masked_img, cv2.COLOR_BGR2RGB))
     axs[1 + i, 1].imshow(cv2.cvtColor(hue_masks[i], cv2.COLOR_BGR2RGB))
+    axs[1 + i, 1].set_title(hist_peaks[i])
     i += 1
 
 plt.show()
-
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-
 
 
 
