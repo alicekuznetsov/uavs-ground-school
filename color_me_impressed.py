@@ -9,6 +9,7 @@ def show_img(name, object):
         Combines a common sequence for showing images, destroying all windows after any key is pressed.
     '''
     cv2.imshow(name, object)
+    cv2.moveWindow(name, 40,30)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
@@ -17,10 +18,11 @@ hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
 # Calculate the histogram of the hue channel
 hues, s, v = cv2.split(hsv_img)
-hist = cv2.calcHist(hues, [0], None, [180], [0, 180])
+hist = cv2.calcHist([hsv_img], [0], None, [180], [0, 180])
+print(hist)
 hist_peaks = []
-threshold = hist.max() * 0.3
-hue_range = 15
+threshold = hist.mean() * 0.25
+hue_range = 20
 
 for hue, occurrences in enumerate(hist):
     if occurrences > threshold:
@@ -37,8 +39,8 @@ print("Peaks found at", hist_peaks)
 hue_masks = []
 for hue in hist_peaks:
     # Max & Min functions allow for wrapping 
-    lower_bound =  (max(0, hue - hue_range), 50, 50)
-    upper_bound = (min(179, hue + hue_range), 255, 255)
+    lower_bound =  (max(0, hue - hue_range), 0, 0)
+    upper_bound = (min(255, hue + hue_range), 255, 255)
     hue_masks.append(cv2.inRange(hsv_img, lower_bound, upper_bound))
     
 
@@ -70,8 +72,6 @@ while i < len(hue_masks):
 plt.show()
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-
-
 
 
 
