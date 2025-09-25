@@ -20,7 +20,8 @@ img = cv2.imread(filepath)
 
 if img is None or not img.any():
     print("Improper filename provided, using default image")
-    img = cv2.imread('assets/wallpaper.jpeg') 
+    filename = 'wallpaper.jpeg'
+    img = cv2.imread('assets/' + filename) 
 
 hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
 
@@ -94,6 +95,8 @@ for hue in hist_peaks:
 # ---------- Actually showing the content! ----------
 
 fig, axs = plt.subplots(ncols=2, nrows=1 + len(hue_masks), figsize=(5.5, 3.5), layout="constrained")
+fig.canvas.manager.set_window_title('Hue Masks of ' + filename)
+
 # Hide axis markers
 for ax in axs.flat:
     ax.axis('off')
